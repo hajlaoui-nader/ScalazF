@@ -81,6 +81,14 @@ class PdvServiceTest extends WordSpec with MockFactory with Matchers {
         ]"""
     }
 
+    "delete a pdv" in {
+      val id = 1
+      (repository.deletePdv _).when(id).returns(IO.pure(Right(())))
+
+      val response = serve(Request[IO](DELETE, Uri.unsafeFromString(s"/pdvs/$id")))
+      response.status shouldBe Status.NoContent
+    }
+
   }
 
 

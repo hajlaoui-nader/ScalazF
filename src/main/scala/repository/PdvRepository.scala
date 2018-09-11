@@ -5,7 +5,7 @@ import doobie.Meta
 import doobie.implicits._
 import doobie.util.transactor.Transactor
 import fs2.Stream
-import model.{Pdv, TypePdv, PdvNotFoundError}
+import model.{Pdv, PdvNotFoundError, TypePdv}
 
 class PdvRepository(transactor: Transactor[IO]) {
 
@@ -25,6 +25,16 @@ class PdvRepository(transactor: Transactor[IO]) {
   def createPdv(pdv: Pdv): IO[Pdv] = {
     sql"INSERT INTO pdv (description, TypePdv) VALUES (${pdv.description}, ${pdv.typePdv})".update.withUniqueGeneratedKeys[Long]("id").transact(transactor).map { id =>
       pdv.copy(id = Some(id))
+    }
+  }
+
+  def deletePdv(id: Long): IO[Either[PdvNotFoundError.type, Unit]] = {
+    sql"DELETE FROM pdv WHERE id = $id".update.run.transact(transactor).map { affectedRows =>
+      if (affectedRows == 1) {
+        Right(())
+      } else {
+        Left(PdvNotFoundError)
+      }
     }
   }
 

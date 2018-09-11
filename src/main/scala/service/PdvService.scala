@@ -43,6 +43,11 @@ class PdvService(repository: PdvRepository) extends Http4sDsl[IO]{
         response <- Created(createdPdv.asJson, Location(Uri.unsafeFromString(s"/pdvs/${createdPdv.id.get}")))
       } yield response
 
+    case DELETE -> Root / "pdvs" / LongVar(id) =>
+      repository.deletePdv(id).flatMap {
+        case Left(PdvNotFoundError) => NotFound()
+        case Right(_) => NoContent()
+      }
   }
 
 }
